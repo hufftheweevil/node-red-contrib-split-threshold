@@ -1,0 +1,20 @@
+{
+  "name": "node-red-contrib-split-threshold",
+  "version": "0.0.1",
+  "description": "A Node-RED node that runs a timer if a value goes beyond a threshold, and stops the timer on a different threshold. A message is sent when the timer ends.",
+  "main": "index.js",
+  "scripts": {},
+  "author": "hufftheweevil",
+  "license": "ISC",
+  "node-red": {
+    "nodes": {
+      "split-threshold": "split-threshold.js"
+    }
+  },
+  "keywords": [
+    "node-red",
+    "iot"
+  ],
+  "homepage": "https://github.com/hufftheweevil/node-red-contrib-split-threshold",
+  "repository": "github:hufftheweevil/node-red-contrib-split-threshold"
+}

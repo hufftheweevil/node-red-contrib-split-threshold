@@ -1,0 +1,142 @@
+<script type="text/javascript">
+  RED.nodes.registerType('Split Threshold', {
+    paletteLabel: 'split threshold',
+    category: 'function',
+    color: '#E6E0F8',
+    defaults: {
+      name: { value: '' },
+      property: { value: 'payload', required: true },
+      startCompare: { value: '>', required: true },
+      startValue: { value: 0, required: true },
+      stopCompare: { value: '<', required: true },
+      stopValue: { value: 100, required: true },
+      duration: { value: 60, required: true },
+      durationUnit: { value: 'seconds', required: true },
+      payload: { value: '{}' },
+      payloadType: { value: 'json' }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'timer.png',
+    label: function () {
+      return this.name || 'split threshold'
+    },
+    labelStyle: function () {
+      return this.name ? 'node_label_italic' : ''
+    },
+    oneditprepare: function () {
+      $('#node-input-typed-property')
+        .typedInput({ types: ['msg'] })
+        .typedInput('value', this.property)
+
+      $('#node-input-typed-startValue')
+        .typedInput({ types: ['num'] })
+        .typedInput('width', '200px')
+        .typedInput('value', this.startValue)
+
+      $('#node-input-typed-stopValue')
+        .typedInput({ types: ['num'] })
+        .typedInput('width', '200px')
+        .typedInput('value', this.stopValue)
+
+      $('#node-input-typed-payload')
+        .typedInput({
+          default: 'json',
+          types: ['flow', 'global', 'str', 'num', 'bool', 'json', 'bin', 're', 'date', 'env']
+        })
+        .typedInput('value', this.payload)
+        .typedInput('type', this.payloadType)
+    },
+    oneditsave: function () {
+      this.property = $('#node-input-typed-property').typedInput('value')
+      this.startValue = $('#node-input-typed-startValue').typedInput('value')
+      this.stopValue = $('#node-input-typed-stopValue').typedInput('value')
+      this.payload = $('#node-input-typed-payload').typedInput('value')
+      this.payloadType = $('#node-input-typed-payload').typedInput('type')
+    }
+  })
+</script>
+
+<script type="text/html" data-template-name="Split Threshold">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-property"><i class="fa fa-ellipsis-h"></i> Property</label>
+    <input type="text" id="node-input-typed-property" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-property"><i class="fa fa-bar-chart"></i> Thresholds</label>
+    <div style="width:70%; display: inline-grid">
+      <div style="white-space: nowrap">
+        Start timer when value
+        <select id="node-input-startCompare" style="width: 60px">
+          <option value="==">==</option>
+          <option value="!=">!=</option>
+          <option value="<"><</option>
+          <option value="<="><=</option>
+          <option value=">">></option>
+          <option value=">=">>=</option>
+        </select>
+        <input type="text" id="node-input-typed-startValue" />
+      </div>
+      <div style="white-space: nowrap">
+        Stop timer when value
+        <select id="node-input-stopCompare" style="width: 60px">
+          <option value="==">==</option>
+          <option value="!=">!=</option>
+          <option value="<"><</option>
+          <option value="<="><=</option>
+          <option value=">">></option>
+          <option value=">=">>=</option>
+        </select>
+        <input type="text" id="node-input-typed-stopValue" />
+      </div>
+    </div>
+  </div>
+  <div class="form-row">
+    <label for="node-input-property"><i class="fa fa-clock-o"></i> Timer</label>
+    <div style="width:70%; display: inline">
+      Output when timer runs for <input type="text" id="node-input-duration" style="width: 50px" />
+      <select id="node-input-durationUnit" style="width: 100px">
+        <option value="milliseconds">milliseconds</option>
+        <option value="seconds">seconds</option>
+        <option value="minutes">minutes</option>
+        <option value="hours">hours</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <label for="node-input-property"><i class="fa fa-envelope"></i> Payload</label>
+    <input type="text" id="node-input-typed-payload" />
+  </div>
+</script>
+
+<script type="text/html" data-help-name="Split Threshold">
+  <p>
+    A that runs a timer if a value goes beyond a threshold, and stops the timer on a different
+    threshold. A message is sent when the timer ends
+  </p>
+
+  <h3>Properties</h3>
+  <dl class="message-properties">
+    <dt class="required">Property</dt>
+    <dd>
+      The property on the incoming messages that contains the value that will be checked against the
+      thresholds
+    </dd>
+    <dt class="required">Threshold</dt>
+    <dd>The thresholds required to start/stop the timer</dd>
+    <dt class="required">Timer</dt>
+    <dd>Duration of timer</dd>
+    <dt class="required">Payload</dt>
+    <dd>The payload sent when the timer ends</dd>
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+    <dt>payload</dt>
+    <dd>As configured</dd>
+  </dl>
+</script>
