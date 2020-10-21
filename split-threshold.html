@@ -13,7 +13,9 @@
       duration: { value: 60, required: true },
       durationUnit: { value: 'seconds', required: true },
       payload: { value: '{}' },
-      payloadType: { value: 'json' }
+      payloadType: { value: 'json' },
+      handling: { value: 'all' },
+      each: { value: 'topic' }
     },
     inputs: 1,
     outputs: 1,
@@ -25,9 +27,8 @@
       return this.name ? 'node_label_italic' : ''
     },
     oneditprepare: function () {
-      $('#node-input-typed-property')
-        .typedInput({ types: ['msg'] })
-        .typedInput('value', this.property)
+      $('#node-input-property').typedInput({ types: ['msg'] })
+      // .typedInput('value', this.property)
 
       $('#node-input-typed-startValue')
         .typedInput({ types: ['num'] })
@@ -46,9 +47,15 @@
         })
         .typedInput('value', this.payload)
         .typedInput('type', this.payloadType)
+
+      $('#node-input-each').typedInput({ default: 'msg', types: ['msg'] })
+      if ($('#node-input-handling').val() !== 'each') $('#node-input-each').typedInput('hide')
+      $('#node-input-handling').on('change', function () {
+        $('#node-input-each').typedInput($(this).val() === 'each' ? 'show' : 'hide')
+      })
     },
     oneditsave: function () {
-      this.property = $('#node-input-typed-property').typedInput('value')
+      // this.property = $('#node-input-typed-property').typedInput('value')
       this.startValue = $('#node-input-typed-startValue').typedInput('value')
       this.stopValue = $('#node-input-typed-stopValue').typedInput('value')
       this.payload = $('#node-input-typed-payload').typedInput('value')
@@ -64,7 +71,7 @@
   </div>
   <div class="form-row">
     <label for="node-input-property"><i class="fa fa-ellipsis-h"></i> Property</label>
-    <input type="text" id="node-input-typed-property" />
+    <input type="text" id="node-input-property" />
   </div>
   <div class="form-row">
     <label for="node-input-property"><i class="fa fa-bar-chart"></i> Thresholds</label>
@@ -111,12 +118,22 @@
     <label for="node-input-property"><i class="fa fa-envelope"></i> Payload</label>
     <input type="text" id="node-input-typed-payload" />
   </div>
+  <div class="form-row">
+    <label for="node-input-handling"><i class="fa fa-inbox"></i> Handling</label>
+    <select id="node-input-handling" style="width:120px;">
+      <option value="all">all messages</option>
+      <option value="each">each</option>
+    </select>
+    <input type="text" id="node-input-each" style="width:46%;" />
+  </div>
 </script>
 
 <script type="text/html" data-help-name="Split Threshold">
   <p>
-    A that runs a timer if a value goes beyond a threshold, and stops the timer on a different
-    threshold. A message is sent when the timer ends
+    A node that runs a timer if a value goes beyond a threshold, and stops the timer on a different
+    threshold. A message is sent when the timer ends. It can configured to run multiple timers at
+    once, by handling messages based on a property. The timers are persistant through re-deployment
+    of flows.
   </p>
 
   <h3>Properties</h3>
@@ -132,6 +149,16 @@
     <dd>Duration of timer</dd>
     <dt class="required">Payload</dt>
     <dd>The payload sent when the timer ends</dd>
+    <dt class="required">Handling</dt>
+    <dd>
+      <ul>
+        <li><code>all messages</code> will treat all messages the same and use only one timer.</li>
+        <li>
+          <code>each</code> will separate messages based on the property specified. Multiple timers
+          will be used. The property will also output with the message.
+        </li>
+      </ul>
+    </dd>
   </dl>
 
   <h3>Output</h3>
