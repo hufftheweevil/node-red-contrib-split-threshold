@@ -15,7 +15,14 @@
       payload: { value: '{}' },
       payloadType: { value: 'json' },
       handling: { value: 'all' },
-      each: { value: 'topic' }
+      each: {
+        value: 'topic',
+        validate: function (v) {
+          return this.handling == 'each' ? v != '' : true
+        }
+      },
+      persistMode: { value: true },
+      aggressiveMode: { value: false }
     },
     inputs: 1,
     outputs: 1,
@@ -54,9 +61,9 @@
       })
     },
     oneditsave: function () {
-      // this.property = $('#node-input-typed-property').typedInput('value')
-      this.startValue = $('#node-input-typed-startValue').typedInput('value')
-      this.stopValue = $('#node-input-typed-stopValue').typedInput('value')
+      this.property = $('#node-input-typed-property').typedInput('value')
+      this.startValue = +$('#node-input-typed-startValue').typedInput('value')
+      this.stopValue = +$('#node-input-typed-stopValue').typedInput('value')
       this.payload = $('#node-input-typed-payload').typedInput('value')
       this.payloadType = $('#node-input-typed-payload').typedInput('type')
     }
@@ -125,6 +132,28 @@
     </select>
     <input type="text" id="node-input-each" style="width:46%;" />
   </div>
+  <div class="form-row">
+    <label></label>
+    <span>
+      <input
+        type="checkbox"
+        id="node-input-persistMode"
+        style="width:25px; vertical-align: baseline"
+      />
+      <label for="node-input-persistMode" style="width: auto"> Persist Mode</label>
+    </span>
+  </div>
+  <div class="form-row">
+    <label></label>
+    <span>
+      <input
+        type="checkbox"
+        id="node-input-aggressiveMode"
+        style="width:25px; vertical-align: baseline"
+      />
+      <label for="node-input-aggressiveMode" style="width: auto"> Aggressive Mode</label>
+    </span>
+  </div>
 </script>
 
 <script type="text/html" data-help-name="Split Threshold">
@@ -157,6 +186,16 @@
           will be used. The property will also output with the message.
         </li>
       </ul>
+    </dd>
+    <dt class="required">Options</dt>
+    <dd>
+      <b>Persist Mode</b> will cause timers to persist through re-deployment. If not selected, all
+      timers and timer states will be reset on re-deployment.
+    </dd>
+    <dd>
+      <b>Aggressive Mode</b> will start the timer as soon as a previous timer has finished and a new
+      value that meets the start timer condition occurs. Without aggressive mode, the value must
+      fail the start condition at least once, before being triggered by it again.
     </dd>
   </dl>
 
