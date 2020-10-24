@@ -29,6 +29,9 @@ module.exports = function (RED) {
 
     let node = this
 
+    if (!timers[node.id]) timers[node.id] = {}
+    node.timers = timers[node.id]
+
     if (config.startCompare[0] == config.stopCompare[0] && /<|>/.test(config.startCompare[0])) {
       node.warn(
         `Both thresholds include '${config.startCompare[0]}'. This may lead to unintended consequences.`
@@ -51,19 +54,23 @@ module.exports = function (RED) {
       let b = RED.util.evaluateNodeProperty(config.startValue, 'num', node, msg)
       let c = RED.util.evaluateNodeProperty(config.stopValue, 'num', node, msg)
 
-      if (TESTS[config.startCompare](a, b) && !timers[timerName]) {
-        timers[timerName] = setTimeout(() => {
-          timers[timerName] = null
-          RED.util.setMessageProperty(outputMsg, config.each, timerName)
+      if (TESTS[config.startCompare](a, b) && !node.timers[timerName]) {
+        node.timers[timerName] = setTimeout(() => {
+          node.timers[timerName] = null
+          try {
+            RED.util.setMessageProperty(outputMsg, config.each, timerName)
+          } catch (e) {
+            node.error(`Unable to set ${config.each} to ${timerName}`)
+          }
           node.send(outputMsg)
           updateStatus()
         }, timeout)
         updateStatus()
       }
 
-      if (TESTS[config.stopCompare](a, c) && timers[timerName]) {
-        clearTimeout(timers[timerName])
-        timers[timerName] = null
+      if (TESTS[config.stopCompare](a, c) && node.timers[timerName]) {
+        clearTimeout(node.timers[timerName])
+        node.timers[timerName] = null
         updateStatus()
       }
     })
@@ -71,18 +78,23 @@ module.exports = function (RED) {
     let statusTimer
 
     function updateStatus() {
-      let active = Object.entries(timers)
-        .map(([name, timer]) => [name, timer && timeRemaining(timer)])
-        .filter(([name, secs]) => secs > 0)
-
-      if (!active.length) return node.status({ text: '' })
-      let text = active.map(([name, secs]) => `${name}:${secs}s`).join(` | `)
-      node.status({ text })
+      if (config.handling == 'all') {
+        let secs = timeRemaining(node.timers.default)
+        if (!secs || secs <= 0) return node.status({ text: '' })
+        node.status({ text: secs + 's' })
+      } else {
+        let active = Object.entries(node.timers)
+          .map(([name, timer]) => [name, timeRemaining(timer)])
+          .filter(([name, secs]) => secs > 0)
+        if (!active.length) return node.status({ text: '' })
+        let text = active.map(([name, secs]) => `${name}:${secs}s`).join(` | `)
+        node.status({ text })
+      }
       clearTimeout(statusTimer)
       statusTimer = setTimeout(updateStatus, timeout / 10)
     }
     function timeRemaining(t) {
-      return Math.ceil((t._idleStart + t._idleTimeout) / 1000 - global.process.uptime())
+      return t && Math.ceil((t._idleStart + t._idleTimeout) / 1000 - global.process.uptime())
     }
   }
   RED.nodes.registerType('Split Threshold', Node)
