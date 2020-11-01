@@ -119,7 +119,7 @@ module.exports = function (RED) {
           this.node.error(`Unable to set ${this.config.each} to ${this.name}: ${e}`)
         }
       }
-      this.node.send(output)
+      this.node.send.call(this.node, output)
       this.collection.updateStatus()
     }
   }
@@ -132,7 +132,8 @@ module.exports = function (RED) {
     // Reference previous collection, or start new
     let timerCollection = timerCollections[node.id] || new TimerCollection(node)
 
-    // Update config in case it changed
+    // Update node ref, and config (in case it changed)
+    timerCollection.node = node
     timerCollection.config = config
 
     // Validate conditions
