@@ -119,7 +119,7 @@ module.exports = function (RED) {
           this.node.error(`Unable to set ${this.config.each} to ${this.name}: ${e}`)
         }
       }
-      this.node.send.call(this.node, output)
+      this.node.send(output)
       this.collection.updateStatus()
     }
   }
